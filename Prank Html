@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚠️ CRITICAL SYSTEM FAILURE ⚠️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+            user-select: none;
+        }
+
+        body {
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* CLICKBAIT PAGE */
+        #clickbait {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00, #ff00ff);
+            background-size: 400% 400%;
+            animation: gradient-shift 3s ease infinite;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .mega-text {
+            font-size: 72px;
+            color: #fff;
+            text-align: center;
+            text-shadow: 
+                0 0 10px #fff,
+                0 0 20px #fff,
+                0 0 40px #ff00de,
+                0 0 80px #ff00de;            animation: mega-pulse 0.5s infinite;
+            margin-bottom: 50px;
+        }
+
+        @keyframes mega-pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-2deg); }
+            75% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        .mega-btn {
+            padding: 40px 100px;
+            font-size: 40px;
+            background: linear-gradient(45deg, #ff0000, #ffff00, #00ff00);
+            border: 5px solid #fff;
+            border-radius: 30px;
+            font-weight: bold;
+            color: #000;
+            box-shadow: 0 0 50px rgba(255,255,255,0.8);
+            animation: btn-chaos 0.3s infinite;
+        }
+
+        @keyframes btn-chaos {
+            0%, 100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 50px #ff0000; }
+            25% { transform: scale(1.05) rotate(-3deg); box-shadow: 0 0 80px #00ff00; }
+            50% { transform: scale(1) rotate(0deg); box-shadow: 0 0 50px #0000ff; }
+            75% { transform: scale(1.05) rotate(3deg); box-shadow: 0 0 80px #ffff00; }
+        }
+
+        /* MAIN CHAOS SCREEN */
+        #chaos-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        /* Multiple background layers */
+        .bg-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bg-1 {
+            background: repeating-linear-gradient(                0deg,
+                #000,
+                #000 2px,
+                #ff0000 2px,
+                #ff0000 4px
+            );
+            animation: bg-scroll 0.1s linear infinite;
+        }
+
+        .bg-2 {
+            background: repeating-linear-gradient(
+                90deg,
+                #000,
+                #000 2px,
+                #00ff00 2px,
+                #00ff00 4px
+            );
+            animation: bg-scroll-reverse 0.1s linear infinite;
+            opacity: 0.5;
+        }
+
+        .bg-3 {
+            background: radial-gradient(circle, #ff0000 0%, #000 70%);
+            animation: bg-pulse 0.2s infinite;
+        }
+
+        @keyframes bg-scroll {
+            from { transform: translateY(0); }
+            to { transform: translateY(20px); }
+        }
+
+        @keyframes bg-scroll-reverse {
+            from { transform: translateX(0); }
+            to { transform: translateX(20px); }
+        }
+
+        @keyframes bg-pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        /* BSOD */
+        .bsod {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0078d7;            color: #fff;
+            padding: 100px;
+            font-family: 'Segoe UI', sans-serif;
+            z-index: 10000;
+            font-size: 24px;
+        }
+
+        .bsod-title {
+            font-size: 120px;
+            margin-bottom: 50px;
+        }
+
+        .bsod-text {
+            font-size: 28px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: #fff;
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+        }
+
+        /* RED SCREEN */
+        .red-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ff0000;
+            color: #000;
+            z-index: 10001;
+            padding: 50px;
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            animation: red-flash 0.1s infinite;
+        }
+
+        @keyframes red-flash {
+            0%, 100% { background: #ff0000; }
+            50% { background: #800000; }        }
+
+        /* BLACK SCREEN WITH TEXT */
+        .black-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #0f0;
+            z-index: 10002;
+            padding: 50px;
+            font-size: 32px;
+            overflow: hidden;
+        }
+
+        /* GLITCH TEXT */
+        .glitch {
+            font-size: 100px;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            text-shadow: 
+                0.05em 0 0 #00fffc, 
+                -0.03em -0.04em 0 #fc00ff,
+                0.025em 0.04em 0 #fffc00;
+            animation: glitch-anim 0.3s infinite;
+        }
+
+        @keyframes glitch-anim {
+            0% { text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff, 0.025em 0.04em 0 #fffc00; }
+            15% { text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff, 0.025em 0.04em 0 #fffc00; }
+            16% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff, -0.05em -0.05em 0 #fffc00; }
+            49% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff, -0.05em -0.05em 0 #fffc00; }
+            50% { text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff, 0 -0.04em 0 #fffc00; }
+            99% { text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff, 0 -0.04em 0 #fffc00; }
+            100% { text-shadow: -0.05em 0 0 #00fffc, -0.025em -0.04em 0 #fc00ff, -0.04em -0.025em 0 #fffc00; }
+        }
+
+        /* POPUPS GALORE */
+        .popup-extreme {
+            position: fixed;
+            background: #c0c0c0;
+            border: 5px outset #fff;
+            padding: 20px;
+            z-index: 99999;
+            min-width: 400px;
+            box-shadow: 10px 10px 30px rgba(0,0,0,0.8);            animation: popup-chaos 0.2s infinite;
+        }
+
+        @keyframes popup-chaos {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-5px, 5px) scale(1.02); }
+            50% { transform: translate(5px, -5px) scale(0.98); }
+            75% { transform: translate(-5px, -5px) scale(1.01); }
+        }
+
+        .popup-header {
+            background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #0000ff, #ff0000);
+            background-size: 300% 100%;
+            animation: header-rainbow 1s linear infinite;
+            color: #fff;
+            padding: 10px;
+            margin: -20px -20px 15px -20px;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        @keyframes header-rainbow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+
+        /* ALERT OVERLOAD */
+        .alert-extreme {
+            position: fixed;
+            background: #fff;
+            border: 10px solid #ff0000;
+            padding: 40px;
+            z-index: 99998;
+            box-shadow: 0 0 100px rgba(255,0,0,1);
+            animation: alert-chaos 0.1s infinite;
+            max-width: 600px;
+        }
+
+        @keyframes alert-chaos {
+            0%, 100% { 
+                transform: translate(0, 0) scale(1) rotate(0deg);
+                box-shadow: 0 0 100px #ff0000;
+            }
+            25% { 
+                transform: translate(10px, -10px) scale(1.05) rotate(-2deg);
+                box-shadow: 0 0 150px #ffff00;
+            }
+            50% { 
+                transform: translate(-10px, 10px) scale(0.95) rotate(2deg);                box-shadow: 0 0 100px #00ff00;
+            }
+            75% { 
+                transform: translate(10px, 10px) scale(1.02) rotate(-1deg);
+                box-shadow: 0 0 150px #0000ff;
+            }
+        }
+
+        /* SPINNING WARNING */
+        .spin-warning {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border: 20px solid #ff0000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            animation: spin 0.5s linear infinite, pulse-size 0.3s infinite;
+            z-index: 99997;
+            background: rgba(255,0,0,0.3);
+            color: #fff;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse-size {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+        }
+
+        /* ERROR TEXT SCROLL */
+        .error-scroll {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #000;
+            color: #0f0;
+            font-size: 36px;
+            padding: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+            z-index: 99996;            border-top: 5px solid #ff0000;
+        }
+
+        .error-scroll-text {
+            display: inline-block;
+            animation: scroll-left 5s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* CURSOR CHAOS */
+        .cursor-clone {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #ff0000;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999999;
+            animation: cursor-chaos 0.2s infinite;
+        }
+
+        @keyframes cursor-chaos {
+            0%, 100% { transform: scale(1) rotate(0deg); border-color: #ff0000; }
+            25% { transform: scale(2) rotate(90deg); border-color: #00ff00; }
+            50% { transform: scale(1.5) rotate(180deg); border-color: #0000ff; }
+            75% { transform: scale(2.5) rotate(270deg); border-color: #ffff00; }
+        }
+
+        /* FULLSCREEN FLASH */
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999999;
+        }
+
+        .flash-active {
+            animation: flash-screen 0.1s infinite;
+        }
+
+        @keyframes flash-screen {            0%, 100% { opacity: 0; background: #fff; }
+            25% { opacity: 0.8; background: #ff0000; }
+            50% { opacity: 0; background: #00ff00; }
+            75% { opacity: 0.8; background: #0000ff; }
+        }
+
+        /* COUNTDOWN EXTREME */
+        .countdown-extreme {
+            font-size: 200px;
+            font-weight: bold;
+            color: #ff0000;
+            text-align: center;
+            animation: countdown-chaos 0.2s infinite;
+            text-shadow: 
+                0 0 20px #ff0000,
+                0 0 40px #ff0000,
+                0 0 80px #ff0000;
+        }
+
+        @keyframes countdown-chaos {
+            0%, 100% { transform: scale(1) rotate(-5deg); color: #ff0000; }
+            25% { transform: scale(1.2) rotate(5deg); color: #ffff00; }
+            50% { transform: scale(1.5) rotate(-5deg); color: #00ff00; }
+            75% { transform: scale(1.3) rotate(5deg); color: #0000ff; }
+        }
+
+        /* MATRIX RAIN EXTREME */
+        .matrix-extreme {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        /* VIRUS SCAN */
+        .virus-scan {
+            position: fixed;
+            background: #000;
+            border: 10px solid #0f0;
+            padding: 40px;
+            color: #0f0;
+            font-size: 24px;
+            z-index: 99995;
+            box-shadow: 0 0 50px #0f0;
+        }
+        .scan-bar {
+            width: 100%;
+            height: 40px;
+            background: #001100;
+            margin: 20px 0;
+            border: 3px solid #0f0;
+        }
+
+        .scan-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #0f0, #00ff00, #adff2f);
+            animation: scan-progress 2s infinite;
+            box-shadow: 0 0 20px #0f0;
+        }
+
+        @keyframes scan-progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        /* SKULL ANIMATION */
+        .skull-mega {
+            font-size: 200px;
+            text-align: center;
+            animation: skull-chaos 0.3s infinite;
+        }
+
+        @keyframes skull-chaos {
+            0%, 100% { transform: scale(1) rotate(0deg); filter: hue-rotate(0deg); }
+            25% { transform: scale(1.3) rotate(-10deg); filter: hue-rotate(90deg); }
+            50% { transform: scale(1) rotate(0deg); filter: hue-rotate(180deg); }
+            75% { transform: scale(1.3) rotate(10deg); filter: hue-rotate(270deg); }
+        }
+
+        /* RANSOM NOTE */
+        .ransom-note {
+            position: fixed;
+            background: #fff;
+            border: 15px solid #ff0000;
+            padding: 60px;
+            z-index: 99994;
+            font-size: 36px;
+            box-shadow: 0 0 100px rgba(255,0,0,1);
+            animation: ransom-shake 0.2s infinite;
+            max-width: 800px;
+        }
+
+        @keyframes ransom-shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }            20% { transform: translate(-10px, 10px) rotate(-3deg); }
+            40% { transform: translate(10px, -10px) rotate(3deg); }
+            60% { transform: translate(-10px, -10px) rotate(-1deg); }
+            80% { transform: translate(10px, 10px) rotate(1deg); }
+        }
+
+        /* INVERTED COLORS */
+        .invert {
+            filter: invert(1);
+        }
+
+        /* SCREEN TEAR */
+        .screen-tear {
+            position: fixed;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(180deg, transparent, #fff, transparent);
+            animation: tear-down 0.5s linear infinite;
+            z-index: 99993;
+            opacity: 0.3;
+        }
+
+        @keyframes tear-down {
+            from { transform: translateY(-100vh); }
+            to { transform: translateY(100vh); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CLICKBAIT -->
+    <div id="clickbait" onclick="startExtremePrank()">
+        <div class="mega-text">🎁 FREE IPHONE 15 PRO MAX 🎁</div>
+        <button class="mega-btn">KLAIM SEKARANG!</button>
+        <div style="color: white; margin-top: 40px; font-size: 28px; text-align: center;">
+            Hanya untuk 1 orang pertama!<br>
+            Klik tombol di atas!
+        </div>
+    </div>
+
+    <!-- CHAOS SCREEN -->
+    <div id="chaos-screen">
+        <div class="bg-layer bg-1"></div>
+        <div class="bg-layer bg-2"></div>
+        <div class="bg-layer bg-3"></div>
+        
+        <div class="matrix-extreme" id="matrixExtreme"></div>
+        
+        <div style="position: relative; z-index: 10; padding: 50px;">
+            <div class="glitch" style="text-align: center; margin: 50px 0;">                SYSTEM DESTROYED
+            </div>
+            
+            <div class="skull-mega">💀☠️💀</div>
+            
+            <div class="countdown-extreme" id="countdownExtreme">00:00</div>
+            
+            <div style="font-size: 48px; color: #ff0000; text-align: center; margin: 30px 0; font-weight: bold;">
+                ALL FILES BEING DELETED!<br>
+                HARD DRIVE BEING FORMATTED!
+            </div>
+        </div>
+
+        <div class="error-scroll">
+            <div class="error-scroll-text" id="errorScroll"></div>
+        </div>
+    </div>
+
+    <!-- BSOD -->
+    <div class="bsod" id="bsod">
+        <div class="bsod-title">:(</div>
+        <div class="bsod-text">
+            Your PC ran into a problem and needs to restart. We're just collecting some error info, and then we'll restart for you.<br><br>
+            <strong>Stop Code: CRITICAL_PROCESS_DIED</strong><br>
+            <strong>Error: 0x000000EF</strong>
+        </div>
+        <div class="qr-code">💀</div>
+        <div class="bsod-text">
+            For more information about this issue and possible fixes, visit https://www.windows.com/stopcode<br><br>
+            If you call a support person, give them this info:<br>
+            Stop code: CRITICAL_PROCESS_DIED
+        </div>
+    </div>
+
+    <!-- RED SCREEN -->
+    <div class="red-screen" id="redScreen">
+        <div style="font-size: 100px; margin-bottom: 50px;">⚠️</div>
+        <div>FATAL ERROR</div>
+        <div style="font-size: 36px; margin-top: 30px;">
+            SYSTEM CORE DESTROYED<br>
+            ALL DATA LOST<br>
+            HARDWARE FAILURE
+        </div>
+    </div>
+
+    <!-- BLACK SCREEN -->
+    <div class="black-screen" id="blackScreen">
+        <div id="blackScreenText"></div>
+    </div>
+    <!-- FLASH OVERLAY -->
+    <div class="flash-overlay" id="flashOverlay"></div>
+
+    <!-- Audio -->
+    <audio id="sound1" loop>
+        <source src="https://www.myinstants.com/media/sounds/windows-xp-error-sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="sound2" loop>
+        <source src="https://www.myinstants.com/media/sounds/police-siren-sound-effect.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="sound3" loop>
+        <source src="https://www.myinstants.com/media/sounds/air-raid-siren.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="beep">
+        <source src="https://www.soundjay.com/buttons/beep-sound-01.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="explosion">
+        <source src="https://www.soundjay.com/nature/sounds/explosion-01.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        let prankActive = false;
+        let popupCount = 0;
+
+        function startExtremePrank() {
+            if (prankActive) return;
+            prankActive = true;
+
+            // Fullscreen
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+
+            // Hide clickbait
+            document.getElementById('clickbait').style.display = 'none';
+            
+            // Show chaos screen
+            document.getElementById('chaos-screen').style.display = 'block';
+            
+            // Start all chaos
+            startMatrixRain();
+            startPopups();
+            startAlerts();
+            startWarnings();
+            startScrollingText();
+            startCountdown();
+            playAllSounds();            startFlashing();
+            createCursorClones();
+            createScreenTears();
+
+            // BSOD after 5 seconds
+            setTimeout(() => {
+                document.getElementById('bsod').style.display = 'block';
+                document.getElementById('chaos-screen').style.display = 'none';
+                document.getElementById('sound1').pause();
+            }, 5000);
+
+            // Red screen after 8 seconds
+            setTimeout(() => {
+                document.getElementById('bsod').style.display = 'none';
+                document.getElementById('redScreen').style.display = 'block';
+                document.getElementById('explosion').play();
+            }, 8000);
+
+            // Black screen after 11 seconds
+            setTimeout(() => {
+                document.getElementById('redScreen').style.display = 'none';
+                document.getElementById('blackScreen').style.display = 'block';
+                startBlackScreenText();
+            }, 11000);
+
+            // Back to chaos after 14 seconds
+            setTimeout(() => {
+                document.getElementById('blackScreen').style.display = 'none';
+                document.getElementById('chaos-screen').style.display = 'block';
+                createRansomNotes();
+            }, 14000);
+
+            // Invert colors randomly
+            setInterval(() => {
+                document.body.classList.toggle('invert');
+            }, 2000);
+        }
+
+        function startMatrixRain() {
+            const container = document.getElementById('matrixExtreme');
+            for (let i = 0; i < 100; i++) {
+                const col = document.createElement('div');
+                col.style.position = 'absolute';
+                col.style.left = Math.random() * 100 + '%';
+                col.style.top = '-100%';
+                col.style.color = Math.random() > 0.5 ? '#0f0' : '#f00';
+                col.style.fontSize = (Math.random() * 20 + 10) + 'px';
+                col.style.animation = `fall ${Math.random() * 2 + 1}s linear infinite`;
+                col.style.animationDelay = Math.random() * 5 + 's';
+                                let text = '';
+                for (let j = 0; j < 50; j++) {
+                    text += Math.random() > 0.5 ? '1' : '0';
+                    text += '<br>';
+                }
+                col.innerHTML = text;
+                container.appendChild(col);
+            }
+
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fall {
+                    to { transform: translateY(100vh); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function startPopups() {
+            const messages = [
+                'VIRUS DETECTED!',
+                'SYSTEM ERROR!',
+                'FILE CORRUPTED!',
+                'HACKER ACCESS!',
+                'DATA STOLEN!',
+                'PASSWORD LEAKED!',
+                'WEBCAM ACTIVE!',
+                'MICROPHONE ON!',
+                'LOCATION TRACKED!',
+                'BANK ACCOUNT HACKED!',
+                'CRYPTO STOLEN!',
+                'IDENTITY THEFT!',
+                'RANSOMWARE ACTIVE!',
+                'BIOS CORRUPTED!',
+                'HDD FAILURE!',
+                'CPU OVERHEAT!',
+                'MEMORY LEAK!',
+                'BOOTLOADER DESTROYED!',
+                'SYSTEM BRICKED!',
+                'GAME OVER!'
+            ];
+
+            setInterval(() => {
+                createExtremePopup(messages[Math.floor(Math.random() * messages.length)]);
+                popupCount++;
+                
+                if (popupCount > 200) {
+                    // Slow down after 200 popups
+                    return;
+                }            }, 200);
+        }
+
+        function createExtremePopup(msg) {
+            const popup = document.createElement('div');
+            popup.className = 'popup-extreme';
+            popup.style.top = Math.random() * 70 + 5 + '%';
+            popup.style.left = Math.random() * 70 + 5 + '%';
+            popup.innerHTML = `
+                <div class="popup-header">⚠️ CRITICAL ERROR #${Math.floor(Math.random() * 9999)}</div>
+                <div style="font-size: 24px; padding: 20px; color: #ff0000; font-weight: bold;">
+                    <span style="font-size: 60px;">🚨</span><br>
+                    ${msg}<br>
+                    <span style="font-size: 16px; color: #000;">Error Code: 0x${Math.floor(Math.random() * 99999999).toString(16).toUpperCase()}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" style="margin-top: 15px; padding: 10px 30px; font-size: 18px; width: 100%;">OK</button>
+            `;
+            document.body.appendChild(popup);
+
+            setTimeout(() => {
+                if (popup.parentElement) popup.remove();
+            }, 8000);
+        }
+
+        function startAlerts() {
+            setInterval(() => {
+                createExtremeAlert();
+            }, 500);
+        }
+
+        function createExtremeAlert() {
+            const alerts = [
+                'DELETING SYSTEM32...',
+                'FORMATTING C: DRIVE...',
+                'ERASING BIOS...',
+                'DESTROYING MBR...',
+                'CORRUPTING REGISTRY...',
+                'WIPING RAM...',
+                'BRICKING CPU...',
+                'MELTING GPU...',
+                'EXPLODING HDD...'
+            ];
+
+            const alert = document.createElement('div');
+            alert.className = 'alert-extreme';
+            alert.style.top = Math.random() * 60 + 10 + '%';
+            alert.style.left = Math.random() * 60 + 10 + '%';
+            alert.innerHTML = `
+                <div class="alert-title" style="font-size: 40px; color: #ff0000; margin-bottom: 20px;">⚠️ CRITICAL ALERT</div>
+                <div class="alert-icon" style="font-size: 100px; text-align: center;">💀</div>                <div style="font-size: 28px; text-align: center; font-weight: bold;">
+                    ${alerts[Math.floor(Math.random() * alerts.length)]}<br>
+                    ${Math.floor(Math.random() * 100)}%
+                </div>
+            `;
+            document.body.appendChild(alert);
+
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        function startWarnings() {
+            setInterval(() => {
+                createSpinningWarning();
+            }, 2000);
+        }
+
+        function createSpinningWarning() {
+            const warning = document.createElement('div');
+            warning.className = 'spin-warning';
+            warning.style.top = Math.random() * 70 + 10 + '%';
+            warning.style.left = Math.random() * 70 + 10 + '%';
+            warning.innerHTML = '⚠️ WARNING';
+            document.body.appendChild(warning);
+
+            setTimeout(() => warning.remove(), 5000);
+        }
+
+        function startScrollingText() {
+            const texts = [
+                'CRITICAL ERROR: System failure imminent... ',
+                'WARNING: All files being deleted... ',
+                'ALERT: Hard drive corrupted... ',
+                'ERROR: BIOS destroyed... ',
+                'FATAL: System cannot recover... ',
+                'DELETING: C:\\Windows\\System32... ',
+                'FORMATTING: Drive C:... ',
+                'ERASING: All partitions... ',
+                'DESTROYING: Master Boot Record... ',
+                'BRICKING: Hardware... '
+            ];
+
+            document.getElementById('errorScroll').textContent = texts.join('');
+        }
+
+        function startCountdown() {
+            let seconds = 0;
+            setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');                document.getElementById('countdownExtreme').textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function playAllSounds() {
+            document.getElementById('sound1').play();
+            setTimeout(() => document.getElementById('sound2').play(), 1000);
+            setTimeout(() => document.getElementById('sound3').play(), 2000);
+            
+            setInterval(() => {
+                document.getElementById('beep').play();
+            }, 500);
+        }
+
+        function startFlashing() {
+            document.getElementById('flashOverlay').classList.add('flash-active');
+        }
+
+        function createCursorClones() {
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const clone = document.createElement('div');
+                    clone.className = 'cursor-clone';
+                    document.body.appendChild(clone);
+
+                    setInterval(() => {
+                        clone.style.left = Math.random() * window.innerWidth + 'px';
+                        clone.style.top = Math.random() * window.innerHeight + 'px';
+                    }, 200);
+                }, i * 500);
+            }
+        }
+
+        function createScreenTears() {
+            setInterval(() => {
+                const tear = document.createElement('div');
+                tear.className = 'screen-tear';
+                tear.style.left = Math.random() * 100 + '%';
+                tear.style.animationDuration = (Math.random() * 0.5 + 0.3) + 's';
+                document.body.appendChild(tear);
+
+                setTimeout(() => tear.remove(), 1000);
+            }, 300);
+        }
+
+        function startBlackScreenText() {
+            const lines = [
+                '> Initializing system destruction...',
+                '> Bypassing security...', SUCCESS',
+                '> Accessing root directory...', GRANTED',                '> Deleting critical files...',
+                '> Removing System32...', ' + Math.floor(Math.random() * 100) + '%',
+                '> Corrupting bootloader...',
+                '> Erasing BIOS...',
+                '> Destroying MBR...',
+                '> Wiping partition table...',
+                '> Bricking hardware...',
+                '> SYSTEM DESTROYED',
+                '> NO RECOVERY POSSIBLE',
+                '> GAME OVER'
+            ];
+
+            let lineIndex = 0;
+            const container = document.getElementById('blackScreenText');
+            
+            const interval = setInterval(() => {
+                if (lineIndex >= lines.length) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                const line = document.createElement('div');
+                line.textContent = lines[lineIndex];
+                line.style.marginBottom = '10px';
+                line.style.color = lineIndex > lines.length - 3 ? '#ff0000' : '#0f0';
+                container.appendChild(line);
+                
+                document.getElementById('beep').play();
+                lineIndex++;
+            }, 800);
+        }
+
+        function createRansomNotes() {
+            setInterval(() => {
+                const ransom = document.createElement('div');
+                ransom.className = 'ransom-note';
+                ransom.style.top = Math.random() * 50 + 10 + '%';
+                ransom.style.left = Math.random() * 50 + 10 + '%';
+                ransom.innerHTML = `
+                    <div style="font-size: 48px; color: #ff0000; text-align: center; margin-bottom: 30px; font-weight: bold;">
+                        💰 RANSOMWARE 💰
+                    </div>
+                    <div style="text-align: center;">
+                        All your files have been encrypted!<br><br>
+                        Pay <strong>Rp 1.000.000.000</strong> in Bitcoin<br>
+                        to decrypt your files!<br><br>
+                        <span style="color: #ff0000; font-size: 24px;">
+                            You have 24 hours!<br>
+                            After that, all files will be deleted forever!
+                        </span>                    </div>
+                    <div style="margin-top: 30px; text-align: center; font-size: 24px;">
+                        Bitcoin Address:<br>
+                        <strong>1ABC123XYZ789DEF456</strong>
+                    </div>
+                `;
+                document.body.appendChild(ransom);
+
+                setTimeout(() => ransom.remove(), 10000);
+            }, 5000);
+        }
+
+        // Prevent everything
+        window.onbeforeunload = function() {
+            return "⚠️ CRITICAL ERROR: System destruction in progress! Do not close!";
+        };
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                (e.ctrlKey && e.key === 'U') ||
+                e.key === 'Escape' ||
+                e.key === 'F11' ||
+                e.key === 'F5') {
+                e.preventDefault();
+                createExtremeAlert();
+            }
+        });
+
+        // Disable right click
+        document.onmousedown = function(e) {
+            if (e.button === 2) {
+                createExtremePopup('RIGHT CLICK DISABLED!');
+                return false;
+            }
+        };
+    </script>
+</body>
+</html>
