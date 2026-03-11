@@ -1,0 +1,545 @@
+local UIS=game:GetService("UserInputService")
+local RS=game:GetService("RunService")
+local player=game:GetService("Players").LocalPlayer
+local cam=workspace.CurrentCamera
+local ter=workspace.Terrain
+
+local Biomes={
+    {"Grass",Enum.Material.Grass},{"Leafy Grass",Enum.Material.LeafyGrass},
+    {"Ground",Enum.Material.Ground},{"Mud",Enum.Material.Mud},
+    {"Sand",Enum.Material.Sand},{"Rock",Enum.Material.Rock},
+    {"Basalt",Enum.Material.Basalt},{"Sandstone",Enum.Material.Sandstone},
+    {"Cobblestone",Enum.Material.Cobblestone},{"Granite",Enum.Material.Granite},
+    {"Snow",Enum.Material.Snow},{"Glacier",Enum.Material.Glacier},
+    {"Water",Enum.Material.Water},{"Pavement",Enum.Material.Pavement},
+}
+local Shapes={{"Ball","Bulat"},{"Box","Kotak"},{"Cylinder","Silinder"}}
+
+local selB=1;local selS=1
+local paintOn=false
+local eraseOn=false
+local painting=false;local touchXY=Vector2.new(0,0)
+local hist={};local MAX=500
+
+local ropeOn=false
+local ropeA=nil;local ropeB=nil
+local ropeAPos=Vector3.new(0,0,0)
+local ropeConstraint=nil;local ropeVis=nil
+local ropeStep=0
+local ropeDebounce=false
+
+local W=Color3.new(1,1,1)
+local BG=Color3.fromRGB(18,20,26)
+local C1=Color3.fromRGB(30,140,70)
+local C2=Color3.fromRGB(28,32,42)
+local C3=Color3.fromRGB(40,80,200)
+local C4=Color3.fromRGB(140,40,40)
+local C5=Color3.fromRGB(160,110,20)
+local CT=Color3.fromRGB(160,240,170)
+
+local function corner(p,r) local c=Instance.new("UICorner");c.CornerRadius=UDim.new(0,r or 7);c.Parent=p end
+local function stroke(p,c,t) local s=Instance.new("UIStroke");s.Color=c;s.Thickness=t or 1.5;s.Parent=p end
+
+local function mkLbl(p,txt,y,h)
+    local l=Instance.new("TextLabel")
+    l.Size=UDim2.new(1,-12,0,h or 13)
+    l.Position=UDim2.new(0,6,0,y)
+    l.BackgroundTransparency=1
+    l.Text=txt;l.TextColor3=CT
+    l.Font=Enum.Font.GothamSemibold;l.TextSize=10
+    l.TextXAlignment=Enum.TextXAlignment.Left
+    l.Parent=p;return l
+end
+
+local function mkBtn(p,txt,y,h,bg)
+    local b=Instance.new("TextButton")
+    b.Size=UDim2.new(1,-12,0,h or 26)
+    b.Position=UDim2.new(0,6,0,y)
+    b.BackgroundColor3=bg or C1
+    b.BorderSizePixel=0;b.Text=txt
+    b.TextColor3=W;b.Font=Enum.Font.GothamBold
+    b.TextSize=10;b.AutoButtonColor=true
+    b.Parent=p;corner(b,6);return b
+end
+
+local function mkSlider(p,y,mn,mx,def,lbl)
+    local tr=Instance.new("Frame")
+    tr.Size=UDim2.new(1,-12,0,11);tr.Position=UDim2.new(0,6,0,y)
+    tr.BackgroundColor3=Color3.fromRGB(35,35,45);tr.BorderSizePixel=0;tr.Parent=p;corner(tr,5)
+    local fi=Instance.new("Frame")
+    fi.Size=UDim2.new((def-mn)/(mx-mn),0,1,0)
+    fi.BackgroundColor3=C1;fi.BorderSizePixel=0;fi.Parent=tr;corner(fi,5)
+    local kn=Instance.new("Frame")
+    kn.Size=UDim2.new(0,14,0,14);kn.AnchorPoint=Vector2.new(0.5,0.5)
+    kn.Position=UDim2.new((def-mn)/(mx-mn),0,0.5,0)
+    kn.BackgroundColor3=W;kn.BorderSizePixel=0;kn.Parent=tr;corner(kn,99)
+    local drag,cur=false,def
+    local function upd(pos)
+        local rel=math.clamp((pos.X-tr.AbsolutePosition.X)/tr.AbsoluteSize.X,0,1)
+        cur=math.floor(mn+rel*(mx-mn))
+        fi.Size=UDim2.new(rel,0,1,0);kn.Position=UDim2.new(rel,0,0.5,0)
+        if lbl then lbl.Text=lbl.Name..": "..cur end
+    end
+    tr.InputBegan:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then drag=true;upd(i.Position) end
+    end)
+    UIS.InputChanged:Connect(function(i)
+        if drag and(i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then upd(i.Position) end
+    end)
+    UIS.InputEnded:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then drag=false end
+    end)
+    return function() return cur end
+end
+
+local sg=Instance.new("ScreenGui")
+sg.Name="TPG";sg.ResetOnSpawn=false
+sg.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+sg.Parent=player.PlayerGui
+
+local SZ=240;local TH=32;local TAH=24;local BH=SZ-TH-TAH
+local mp=Instance.new("Frame")
+mp.Size=UDim2.new(0,SZ,0,SZ)
+mp.Position=UDim2.new(0,10,0.5,-120)
+mp.BackgroundColor3=BG;mp.BackgroundTransparency=0.05
+mp.BorderSizePixel=0;mp.Active=true;mp.Draggable=true;mp.Parent=sg
+corner(mp,12);stroke(mp,C1,1.5)
+
+local titleBar=Instance.new("Frame")
+titleBar.Size=UDim2.new(1,0,0,TH)
+titleBar.BackgroundColor3=C1;titleBar.BorderSizePixel=0;titleBar.Parent=mp;corner(titleBar,12)
+
+local titleLbl=Instance.new("TextLabel")
+titleLbl.Size=UDim2.new(1,-36,1,0);titleLbl.Position=UDim2.new(0,10,0,0)
+titleLbl.BackgroundTransparency=1;titleLbl.Text="Terrain Painter"
+titleLbl.TextColor3=W;titleLbl.Font=Enum.Font.GothamBold
+titleLbl.TextSize=13;titleLbl.TextXAlignment=Enum.TextXAlignment.Left;titleLbl.Parent=titleBar
+
+local minBtn=Instance.new("TextButton")
+minBtn.Size=UDim2.new(0,24,0,24);minBtn.Position=UDim2.new(1,-28,0,4)
+minBtn.BackgroundColor3=Color3.fromRGB(15,105,50);minBtn.BorderSizePixel=0
+minBtn.Text="—";minBtn.TextColor3=W;minBtn.Font=Enum.Font.GothamBold
+minBtn.TextSize=12;minBtn.Parent=titleBar;corner(minBtn,5)
+
+local tabBar=Instance.new("Frame")
+tabBar.Size=UDim2.new(1,0,0,TAH);tabBar.Position=UDim2.new(0,0,0,TH)
+tabBar.BackgroundColor3=Color3.fromRGB(14,16,22);tabBar.BorderSizePixel=0;tabBar.Parent=mp
+
+local TABS={"Brush","Shape","Biome","Rope","Script"}
+local TCOLS={C1,C3,C1,C5,C3}
+local tabBtns={};local tw=SZ/#TABS
+for i,t in ipairs(TABS) do
+    local b=Instance.new("TextButton")
+    b.Size=UDim2.new(0,tw-2,1,-4);b.Position=UDim2.new(0,(i-1)*tw+1,0,2)
+    b.BackgroundColor3=C2;b.BorderSizePixel=0
+    b.Text=t;b.TextColor3=W;b.Font=Enum.Font.GothamBold;b.TextSize=8
+    b.Parent=tabBar;corner(b,5);tabBtns[i]=b
+end
+tabBtns[1].BackgroundColor3=TCOLS[1]
+
+local body=Instance.new("Frame")
+body.Size=UDim2.new(1,0,0,BH);body.Position=UDim2.new(0,0,0,TH+TAH)
+body.BackgroundTransparency=1;body.BorderSizePixel=0
+body.ClipsDescendants=true;body.Parent=mp
+
+local p1=Instance.new("Frame");p1.Size=UDim2.new(1,0,1,0);p1.BackgroundTransparency=1;p1.BorderSizePixel=0;p1.Parent=body
+
+local tgBtn=mkBtn(p1,"Paint: OFF",4,26,C4)
+local erBtn=mkBtn(p1,"Erase: OFF",34,26,C2)
+
+local bsL=mkLbl(p1,"Brush Size: 20",66)
+bsL.Name="Brush Size"
+local getBS=mkSlider(p1,80,4,60,20,bsL)
+
+local bstL=mkLbl(p1,"Brush Strength: 5",96)
+bstL.Name="Brush Strength"
+local getBST=mkSlider(p1,110,1,25,5,bstL)
+
+local cntL=mkLbl(p1,"Ops: 0/"..MAX,128)
+local clrHBtn=mkBtn(p1,"Clear Ops",144,22,C4)
+
+local p2=Instance.new("Frame");p2.Size=UDim2.new(1,0,1,0);p2.BackgroundTransparency=1;p2.BorderSizePixel=0;p2.Visible=false;p2.Parent=body
+
+mkLbl(p2,"Brush Shape:",4)
+local shBtns={};local shW=(SZ-16)/3
+for i,sh in ipairs(Shapes) do
+    local b=mkBtn(p2,sh[2],20,28,i==1 and C3 or C2)
+    b.Size=UDim2.new(0,shW-2,0,28);b.Position=UDim2.new(0,6+(i-1)*shW,0,20)
+    shBtns[i]=b
+    b.MouseButton1Click:Connect(function()
+        selS=i
+        for j,o in ipairs(shBtns) do o.BackgroundColor3=j==i and C3 or C2 end
+    end)
+end
+
+local dv=Instance.new("Frame");dv.Size=UDim2.new(1,-12,0,1);dv.Position=UDim2.new(0,6,0,54)
+dv.BackgroundColor3=Color3.fromRGB(40,50,40);dv.BorderSizePixel=0;dv.Parent=p2
+local clrTBtn=mkBtn(p2,"Clear ALL Terrain",60,28,Color3.fromRGB(150,70,15))
+local cfmL=mkLbl(p2,"Konfirmasi? Klik 2x",92)
+cfmL.Visible=false
+
+local clrStep=0;local clrTimer=0
+clrTBtn.MouseButton1Click:Connect(function()
+    local now=tick()
+    if clrStep==0 or now-clrTimer>3 then
+        clrStep=1;clrTimer=now;cfmL.Visible=true
+        clrTBtn.Text="Konfirmasi? (3s)"
+    elseif clrStep==1 and now-clrTimer<=3 then
+        ter:Clear();clrStep=0;cfmL.Visible=false
+        clrTBtn.Text="Cleared!"
+        task.delay(2,function() clrTBtn.Text="Clear ALL Terrain" end)
+    end
+end)
+
+local p3=Instance.new("Frame");p3.Size=UDim2.new(1,0,1,0);p3.BackgroundTransparency=1;p3.BorderSizePixel=0;p3.Visible=false;p3.Parent=body
+
+local bScr=Instance.new("ScrollingFrame")
+bScr.Size=UDim2.new(1,-8,1,-4);bScr.Position=UDim2.new(0,4,0,2)
+bScr.BackgroundColor3=Color3.fromRGB(10,11,16);bScr.BorderSizePixel=0
+bScr.ScrollBarThickness=3;bScr.ScrollBarImageColor3=C1
+bScr.CanvasSize=UDim2.new(0,0,0,#Biomes*26+4);bScr.Parent=p3;corner(bScr,7)
+
+local bBtns={}
+for i,bm in ipairs(Biomes) do
+    local b=Instance.new("TextButton")
+    b.Size=UDim2.new(1,-8,0,22);b.Position=UDim2.new(0,4,0,(i-1)*26+3)
+    b.BackgroundColor3=i==1 and C1 or C2;b.BorderSizePixel=0
+    b.Text=bm[1];b.TextColor3=W;b.Font=Enum.Font.Gotham;b.TextSize=10
+    b.Parent=bScr;corner(b,5);bBtns[i]=b
+    b.MouseButton1Click:Connect(function()
+        selB=i
+        for j,o in ipairs(bBtns) do o.BackgroundColor3=j==i and C1 or C2 end
+    end)
+end
+
+local p4=Instance.new("Frame");p4.Size=UDim2.new(1,0,1,0);p4.BackgroundTransparency=1;p4.BorderSizePixel=0;p4.Visible=false;p4.Parent=body
+
+local ropeTgBtn=mkBtn(p4,"Rope: OFF",4,26,C2)
+local ropeStatusL=mkLbl(p4,"Tap Part A",36,13)
+local ropeStepL=mkLbl(p4,"Step: -",52,13)
+
+local dv2=Instance.new("Frame");dv2.Size=UDim2.new(1,-12,0,1);dv2.Position=UDim2.new(0,6,0,70)
+dv2.BackgroundColor3=Color3.fromRGB(40,50,40);dv2.BorderSizePixel=0;dv2.Parent=p4
+
+mkLbl(p4,"Slack:",76)
+local rlL=mkLbl(p4,"Slack: 5",90)
+rlL.Name="Slack"
+local getRopeLen=mkSlider(p4,104,0,50,5,rlL)
+
+mkLbl(p4,"Thickness:",120)
+local rtL=mkLbl(p4,"Thickness: 2",134)
+rtL.Name="Thickness"
+local getRopeThick=mkSlider(p4,148,1,10,2,rtL)
+
+local ropeClearBtn=mkBtn(p4,"Hapus Semua Rope",162,22,C4)
+
+local p5=Instance.new("Frame");p5.Size=UDim2.new(1,0,1,0);p5.BackgroundTransparency=1;p5.BorderSizePixel=0;p5.Visible=false;p5.Parent=body
+
+local genBtn=mkBtn(p5,"Generate Script",4,26,C3)
+mkLbl(p5,"Klik Generate, copy script.",36)
+local opsL=mkLbl(p5,"Ops: 0",84)
+
+local pages={p1,p2,p3,p4,p5}
+local function switchTab(i)
+    for j,pg in ipairs(pages) do pg.Visible=j==i end
+    for j,tb in ipairs(tabBtns) do tb.BackgroundColor3=j==i and TCOLS[j] or C2 end
+end
+for i,tb in ipairs(tabBtns) do tb.MouseButton1Click:Connect(function() switchTab(i) end) end
+
+local isMin=false
+minBtn.MouseButton1Click:Connect(function()
+    isMin=not isMin
+    tabBar.Visible=not isMin;body.Visible=not isMin
+    mp.Size=isMin and UDim2.new(0,SZ,0,TH+4) or UDim2.new(0,SZ,0,SZ)
+    minBtn.Text=isMin and "+" or "—"
+end)
+
+tgBtn.MouseButton1Click:Connect(function()
+    paintOn=not paintOn
+    tgBtn.Text=paintOn and "Paint: ON" or "Paint: OFF"
+    tgBtn.BackgroundColor3=paintOn and C1 or C4
+end)
+
+erBtn.MouseButton1Click:Connect(function()
+    eraseOn=not eraseOn
+    erBtn.Text=eraseOn and "Erase: ON" or "Erase: OFF"
+    erBtn.BackgroundColor3=eraseOn and C5 or C2
+end)
+
+clrHBtn.MouseButton1Click:Connect(function()
+    hist={};cntL.Text="Ops: 0/"..MAX;opsL.Text="Ops: 0"
+end)
+
+local allRopes={}  -- simpan semua rope untuk hapus
+
+local function cleanRopePreview()
+    if ropeVis then ropeVis:Destroy();ropeVis=nil end
+end
+
+local function resetRopeState()
+    ropeStep=0;ropeA=nil;ropeB=nil
+    ropeAPos=Vector3.new(0,0,0)
+    cleanRopePreview()
+    ropeStatusL.Text="Tap Part A"
+    ropeStepL.Text="Step: -"
+end
+
+local function makeAnchor(hitPos, part)
+    local a = Instance.new("Attachment")
+    local localPos = part.CFrame:PointToObjectSpace(hitPos)
+    a.Position = localPos
+    a.Parent = part
+    return a
+end
+
+local function spawnRope(posA, posB, partA, partB)
+    local thick = getRopeThick() * 0.1
+    local dist  = (posA - posB).Magnitude
+    local slack = getRopeLen()
+    local len   = dist + slack
+
+    local attA = makeAnchor(posA, partA)
+    local attB = makeAnchor(posB, partB)
+
+    local rope = Instance.new("RopeConstraint")
+    rope.Attachment0 = attA
+    rope.Attachment1 = attB
+    rope.Length      = len
+    rope.Thickness   = thick
+    rope.Restitution = 0
+    rope.Visible     = true
+    rope.Color       = BrickColor.new("Reddish brown")
+    rope.Parent      = partA
+
+    table.insert(allRopes, {rope, attA, attB})
+
+    ropeStatusL.Text = "Dibuat! L="..math.floor(len).." T="..thick
+    ropeStepL.Text   = "Total: "..#allRopes
+    task.delay(2, function()
+        if ropeOn then
+            ropeStatusL.Text = "Tap Part A"
+            ropeStepL.Text   = "Total: "..#allRopes
+        end
+    end)
+end
+
+local function getRayHitPart(xy)
+    local ray=cam:ScreenPointToRay(xy.X,xy.Y)
+    local rp=RaycastParams.new()
+    rp.FilterType=Enum.RaycastFilterType.Exclude
+    local char=player.Character
+    if char then rp.FilterDescendantsInstances={char} end
+    return workspace:Raycast(ray.Origin,ray.Direction*1000,rp)
+end
+
+ropeTgBtn.MouseButton1Click:Connect(function()
+    ropeOn=not ropeOn
+    if ropeOn then
+        ropeTgBtn.Text="Rope: ON"
+        ropeTgBtn.BackgroundColor3=C5
+        ropeStep=0
+        ropeStatusL.Text="Tap Part A"
+        ropeStepL.Text="Step: 1/2"
+    else
+        ropeTgBtn.Text="Rope: OFF"
+        ropeTgBtn.BackgroundColor3=C2
+        resetRopeState()
+    end
+end)
+
+ropeClearBtn.MouseButton1Click:Connect(function()
+    for _,r in ipairs(allRopes) do
+        pcall(function() r[1]:Destroy();r[2]:Destroy();r[3]:Destroy() end)
+    end
+    allRopes={};resetRopeState()
+    ropeStatusL.Text="Rope dihapus"
+    ropeStepL.Text="Total: 0"
+end)
+
+local lastT=0
+local function doFill(sp,r,st,mat)
+    local sh=Shapes[selS][1]
+    if sh=="Ball" then ter:FillBall(sp,r,mat)
+    elseif sh=="Box" then ter:FillBlock(CFrame.new(sp),Vector3.new(r,st,r)*2,mat)
+    elseif sh=="Cylinder" then ter:FillCylinder(CFrame.new(sp),st*2,r,mat) end
+end
+
+local function doPaint(xy)
+    local now=tick();if now-lastT<0.06 then return end;lastT=now
+    local ray=cam:ScreenPointToRay(xy.X,xy.Y)
+    local rp=RaycastParams.new()
+    rp.FilterType=Enum.RaycastFilterType.Exclude
+    rp.FilterDescendantsInstances={player.Character or workspace}
+    local hit=workspace:Raycast(ray.Origin,ray.Direction*1500,rp)
+    if not hit then return end
+    local sn=4;local pos=hit.Position
+    local sp=Vector3.new(math.floor(pos.X/sn)*sn,math.floor(pos.Y/sn)*sn,math.floor(pos.Z/sn)*sn)
+    local r=getBS();local st=getBST()
+    local mat=eraseOn and Enum.Material.Air or Biomes[selB][2]
+    doFill(sp,r,st,mat)
+    if #hist<MAX then
+        local mn=eraseOn and "Air" or (tostring(Biomes[selB][2]):match("%.(%w+)$") or "Grass")
+        table.insert(hist,{sp.X,sp.Y,sp.Z,r,st,mn,Shapes[selS][1]})
+        cntL.Text="Ops: "..#hist.."/"..MAX
+        opsL.Text="Ops: "..#hist
+    else
+        cntL.Text="MAX! Clear dulu"
+    end
+end
+
+UIS.InputBegan:Connect(function(i,gp)
+    if gp then return end
+    local isMouse=i.UserInputType==Enum.UserInputType.MouseButton1
+    local isTouch=i.UserInputType==Enum.UserInputType.Touch
+    if not(isMouse or isTouch) then return end
+
+    local xy=Vector2.new(i.Position.X,i.Position.Y)
+
+    if ropeOn then
+        if ropeDebounce then return end
+        ropeDebounce=true
+        task.delay(0.3, function() ropeDebounce=false end)
+
+        local hit=getRayHitPart(xy)
+        if hit and hit.Instance and hit.Instance:IsA("BasePart") then
+            if ropeStep==0 then
+                ropeA=hit.Instance
+                ropeAPos=hit.Position
+                ropeStep=1
+                ropeStatusL.Text="Titik A OK, tap B"
+                ropeStepL.Text="Step: 2/2"
+            elseif ropeStep==1 then
+                ropeB=hit.Instance
+                local posB=hit.Position
+                spawnRope(ropeAPos, posB, ropeA, ropeB)
+                ropeStep=0
+                ropeStepL.Text="Step: 1/2"
+                ropeStatusL.Text="Tap Part A"
+            end
+        else
+            ropeStatusL.Text="Tap BasePart!"
+        end
+        return
+    end
+
+    if not paintOn then return end
+    painting=true;touchXY=xy
+end)
+
+UIS.InputChanged:Connect(function(i)
+    if i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch then
+        touchXY=Vector2.new(i.Position.X,i.Position.Y)
+    end
+end)
+
+UIS.InputEnded:Connect(function(i)
+    if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+        painting=false
+    end
+end)
+
+RS.RenderStepped:Connect(function()
+    if painting and paintOn and not ropeOn then doPaint(touchXY) end
+end)
+
+local function buildScript()
+    if #hist==0 then return "-- Belum ada ops." end
+    local L={"local t=workspace.Terrain","local ops={"}
+    for _,o in ipairs(hist) do
+        L[#L+1]=string.format('  {%d,%d,%d,%d,%d,"%s","%s"},',o[1],o[2],o[3],o[4],o[5],o[6],o[7])
+    end
+    L[#L+1]="}"
+    L[#L+1]="for _,o in ipairs(ops) do"
+    L[#L+1]="  local pos=Vector3.new(o[1],o[2],o[3])"
+    L[#L+1]="  local m=Enum.Material[o[6]] or Enum.Material.Grass"
+    L[#L+1]="  if o[7]=='Ball' then t:FillBall(pos,o[4],m)"
+    L[#L+1]="  elseif o[7]=='Box' then t:FillBlock(CFrame.new(pos),Vector3.new(o[4],o[5],o[4])*2,m)"
+    L[#L+1]="  elseif o[7]=='Cylinder' then t:FillCylinder(CFrame.new(pos),o[5]*2,o[4],m) end"
+    L[#L+1]="end"
+    return table.concat(L,"\n")
+end
+
+local popup=nil;local popMin=false;local PW,PH=260,260
+
+local function showPopup()
+    if popup then
+        popup:Destroy();popup=nil;popMin=false
+        genBtn.Text="Generate Script";genBtn.BackgroundColor3=C3;return
+    end
+    local code=buildScript()
+    local boxH=math.max(150,(select(2,code:gsub("\n",""))+2)*13+8)
+
+    popup=Instance.new("Frame")
+    popup.Size=UDim2.new(0,PW,0,PH)
+    popup.Position=UDim2.new(1,-PW-8,1,-PH-8)
+    popup.BackgroundColor3=BG;popup.BackgroundTransparency=0.05
+    popup.BorderSizePixel=0;popup.Active=true;popup.Draggable=true
+    popup.ZIndex=30;popup.Parent=sg
+    corner(popup,10);stroke(popup,C3,2)
+
+    local HD=28
+    local hdr=Instance.new("Frame")
+    hdr.Size=UDim2.new(1,0,0,HD);hdr.BackgroundColor3=C3
+    hdr.BorderSizePixel=0;hdr.ZIndex=31;hdr.Parent=popup;corner(hdr,10)
+
+    local hl=Instance.new("TextLabel")
+    hl.Size=UDim2.new(1,-54,1,0);hl.Position=UDim2.new(0,8,0,0)
+    hl.BackgroundTransparency=1;hl.Text="Save Script"
+    hl.TextColor3=W;hl.Font=Enum.Font.GothamBold;hl.TextSize=11
+    hl.TextXAlignment=Enum.TextXAlignment.Left;hl.ZIndex=32;hl.Parent=hdr
+
+    local pmB=Instance.new("TextButton")
+    pmB.Size=UDim2.new(0,22,0,22);pmB.Position=UDim2.new(1,-48,0,3)
+    pmB.BackgroundColor3=Color3.fromRGB(25,55,160);pmB.BorderSizePixel=0
+    pmB.Text="—";pmB.TextColor3=W;pmB.Font=Enum.Font.GothamBold
+    pmB.TextSize=12;pmB.ZIndex=33;pmB.Parent=hdr;corner(pmB,5)
+
+    local pcB=Instance.new("TextButton")
+    pcB.Size=UDim2.new(0,22,0,22);pcB.Position=UDim2.new(1,-24,0,3)
+    pcB.BackgroundColor3=C4;pcB.BorderSizePixel=0
+    pcB.Text="✕";pcB.TextColor3=W;pcB.Font=Enum.Font.GothamBold
+    pcB.TextSize=12;pcB.ZIndex=33;pcB.Parent=hdr;corner(pcB,5)
+
+    local bd=Instance.new("Frame")
+    bd.Size=UDim2.new(1,0,1,-HD);bd.Position=UDim2.new(0,0,0,HD)
+    bd.BackgroundTransparency=1;bd.BorderSizePixel=0;bd.Parent=popup
+
+    local inf=Instance.new("Frame")
+    inf.Size=UDim2.new(1,-10,0,20);inf.Position=UDim2.new(0,5,0,4)
+    inf.BackgroundColor3=Color3.fromRGB(14,40,16);inf.BorderSizePixel=0
+    inf.ZIndex=31;inf.Parent=bd;corner(inf,5)
+    local iL=Instance.new("TextLabel")
+    iL.Size=UDim2.new(1,0,1,0);iL.Position=UDim2.new(0,4,0,0)
+    iL.BackgroundTransparency=1;iL.Text="CTRL+A > CTRL+C > Paste ke ServerScriptService"
+    iL.TextColor3=CT;iL.Font=Enum.Font.Gotham;iL.TextSize=8
+    iL.TextXAlignment=Enum.TextXAlignment.Left;iL.ZIndex=32;iL.Parent=inf
+
+    local scrH=PH-HD-30
+    local scr=Instance.new("ScrollingFrame")
+    scr.Size=UDim2.new(1,-10,0,scrH);scr.Position=UDim2.new(0,5,0,27)
+    scr.BackgroundColor3=Color3.fromRGB(6,7,11);scr.BorderSizePixel=0
+    scr.ScrollBarThickness=4;scr.ScrollBarImageColor3=C3
+    scr.CanvasSize=UDim2.new(0,0,0,boxH);scr.ZIndex=31;scr.Parent=bd
+    corner(scr,6);stroke(scr,Color3.fromRGB(30,50,130),1)
+
+    local txb=Instance.new("TextBox")
+    txb.Size=UDim2.new(1,-4,0,boxH);txb.Position=UDim2.new(0,2,0,2)
+    txb.BackgroundTransparency=1;txb.Text=code
+    txb.TextColor3=CT;txb.Font=Enum.Font.Code;txb.TextSize=8
+    txb.TextXAlignment=Enum.TextXAlignment.Left;txb.TextYAlignment=Enum.TextYAlignment.Top
+    txb.MultiLine=true;txb.ClearTextOnFocus=false
+    txb.BorderSizePixel=0;txb.ZIndex=32;txb.Parent=scr
+
+    pmB.MouseButton1Click:Connect(function()
+        popMin=not popMin;bd.Visible=not popMin
+        popup.Size=popMin and UDim2.new(0,PW,0,HD+4) or UDim2.new(0,PW,0,PH)
+        pmB.Text=popMin and "+" or "—"
+    end)
+    pcB.MouseButton1Click:Connect(function()
+        popup:Destroy();popup=nil;popMin=false
+        genBtn.Text="Generate Script";genBtn.BackgroundColor3=C3
+    end)
+    genBtn.Text="Tutup Script";genBtn.BackgroundColor3=C4
+end
+
+genBtn.MouseButton1Click:Connect(showPopup)
