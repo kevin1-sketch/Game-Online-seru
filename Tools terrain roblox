@@ -284,10 +284,9 @@ local function resetRopeState()
     ropeStepL.Text="Step: -"
 end
 
-local function makeAnchor(hitPos, part)
+local function makeAnchor(part)
     local a = Instance.new("Attachment")
-    local localPos = part.CFrame:PointToObjectSpace(hitPos)
-    a.Position = localPos
+    a.Position = Vector3.new(0,0,0)
     a.Parent = part
     return a
 end
@@ -298,8 +297,8 @@ local function spawnRope(posA, posB, partA, partB)
     local slack = getRopeLen()
     local len   = dist + slack
 
-    local attA = makeAnchor(posA, partA)
-    local attB = makeAnchor(posB, partB)
+    local attA = makeAnchor(partA)
+    local attB = makeAnchor(partB)
 
     local rope = Instance.new("RopeConstraint")
     rope.Attachment0 = attA
@@ -313,7 +312,7 @@ local function spawnRope(posA, posB, partA, partB)
 
     table.insert(allRopes, {rope, attA, attB})
 
-    ropeStatusL.Text = "Dibuat! L="..math.floor(len).." T="..thick
+    ropeStatusL.Text = "Dibuat! L="..math.floor(len)
     ropeStepL.Text   = "Total: "..#allRopes
     task.delay(2, function()
         if ropeOn then
